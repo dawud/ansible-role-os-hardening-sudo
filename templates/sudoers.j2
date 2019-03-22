@@ -1,0 +1,36 @@
+# {{ansible_managed }}
+# /etc/sudoers
+# This file should be edited with the 'visudo' command.
+# vim:syn=jinja2:ts=2:fdm=marker
+{# TODO: extend to support full spec #}
+
+{% for item in sudoers.user_aliases | default([]) %}
+User_Alias {{ item.name }} = {{ item.members }}
+{% endfor %}
+
+{% for item in sudoers.runas_aliases | default([]) %}
+Runas_Alias {{ item.name }} = {{ item.members }}
+{% endfor %}
+
+{% for item in sudoers.host_aliases | default([]) %}
+Host_Alias {{ item.name }} = {{ item.members }}
+{% endfor %}
+
+{% for item in sudoers.cmnd_aliases | default([]) %}
+Cmnd_Alias {{ item.name }} = {{ item.members }}
+{% endfor %}
+
+{% for item in sudoers.defaults %}
+{% if item != '' %}
+Defaults {{ item }}
+{% endif %}
+{% endfor %}
+{# FIXME: Hardcoded here, breaks ansible otherwise #}
+Defaults:%wheel !requiretty
+
+{% for item in sudoers.privileges | default([]) %}
+{{ item.name }} {{ item.entry }}
+{% endfor %}
+
+# See sudoers(5) for more information on "#include" directives:
+#includedir /etc/sudoers.d

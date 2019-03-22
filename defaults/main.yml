@@ -1,0 +1,57 @@
+---
+## Sudo
+# Set the package install state for distribution packages
+# Options are 'present' and 'latest'
+security_package_state: present
+
+# Some minimally secure defaults
+sudoers:
+  defaults:
+    - 'always_set_home'
+    - 'authenticate'
+    - 'closefrom=3'
+    - 'editor=/usr/bin/rvi'
+    - 'env_reset'
+    - 'env_keep =  "COLORS DISPLAY HOSTNAME HISTSIZE INPUTRC KDEDIR LS_COLORS"'
+    - 'env_keep += "MAIL PS1 PS2 QTDIR USERNAME LANG LC_ADDRESS LC_CTYPE"'
+    - 'env_keep += "LC_COLLATE LC_IDENTIFICATION LC_MEASUREMENT LC_MESSAGES"'
+    - 'env_keep += "LC_MONETARY LC_NAME LC_NUMERIC LC_PAPER LC_TELEPHONE"'
+    - 'env_keep += "LC_TIME LC_ALL LANGUAGE LINGUAS _XKB_CHARSET XAUTHORITY"'
+    - 'env_keep += "LESSSECURE SUDO_EDITOR"'
+    - 'fqdn'
+    - 'ignore_dot'
+    - 'insults'
+    - 'lecture=always'
+    - 'lecture_file=/etc/sudoers.lecture'
+    - 'log_host'
+    - 'log_output'
+    - 'mail_badpass'
+    - 'passprompt="SUDO: %u, enter your password to run a command as %U in %H:"'
+    - 'passwd_timeout=1'
+    - 'passwd_tries=2'
+    - '!path_info'
+    - 'requiretty'
+    - 'runas_default=root'
+    - 'set_logname'
+    - 'set_utmp'
+    - '!setenv'
+    - 'secure_path="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"'
+    - '!shell_noargs'
+    - '!sudoedit_follow'
+    - 'syslog_badpri=alert'
+    - 'syslog_goodpri=notice'
+    - 'timestamp_timeout=180'
+    - '!visiblepw'
+  host_aliases:
+    - name: LOCAL
+      members: 127.0.0.1/32
+  user_aliases:
+    - name: MAINTENANCE
+      members: maintuser, ec2-user
+  privileges:
+    - name: root
+      entry: 'LOCAL=(ALL) ALL'
+    - name: '%wheel'
+      entry: 'LOCAL=(root)PASSWD: ALL'
+
+sudoers_d_files: []

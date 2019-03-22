@@ -1,0 +1,116 @@
+---
+- name: Add or remove sudo packages based on STIG requirements
+  yum:
+    # yamllint disable-line
+    name: "{{ stig_packages_rhel7 | selectattr('enabled') | selectattr('state', 'equalto', item) | sum(attribute='packages', start=[]) }}"
+    state: "{{ item }}"
+  with_items:
+    # yamllint disable-line
+    - "{{ stig_packages_rhel7 | selectattr('enabled') | map(attribute='state') | unique | list }}"
+  tags:
+    - cat1
+    - auth
+    - packages
+    - services
+    - V-71897
+    - V-71967
+    - V-71969
+    - V-72067
+    - V-72077
+    - V-72213
+    - V-72233
+    - V-72301
+    - V-72307
+
+- name: Manage sudo binary permissions
+  file:
+    path: /usr/bin/sudo
+    state: file
+    owner: 0
+    group: 0
+    mode: 04111
+    seuser: system_u
+    serole: object_r
+    setype: sudo_exec_t
+    selevel: s0
+    backup: no
+
+- name: Manage sudo-io permissions
+  file:
+    path: /var/log/sudo-io
+    state: directory
+    owner: 0
+    group: 0
+    mode: 0700
+    seuser: system_u
+    serole: object_r
+    setype: var_log_t
+    selevel: s0
+    backup: no
+
+- name: Manage custom sudoers files
+  template:
+    src: sudoers_custom.j2
+    dest: "/etc/sudoers.d/{{ item.key }}"
+    owner: 0
+    group: 0
+    mode: 0440
+    seuser: system_u
+    serole: object_r
+    setype: etc_t
+    selevel: s0
+    validate: "visudo -cf %s"
+    backup: no
+  loop: "{{ sudoers_d_files }}"
+  when: sudoers_d_files | lenght != 0
+
+- name: Manage global sudoers file
+  template:
+    src: sudoers.j2
+    dest: /etc/sudoers
+    owner: 0
+    group: 0
+    mode: 0440
+    seuser: system_u
+    serole: object_r
+    setype: etc_t
+    selevel: s0
+    validate: 'visudo -cf %s'
+    backup: no
+
+- name:  Manage sudoers lecture file
+  template:
+    src: sudoers.lecture.j2
+    dest: /etc/sudoers.lecture
+    owner: 0
+    group: 0
+    mode: 0440
+    seuser: system_u
+    serole: object_r
+    setype: etc_t
+    selevel: s0
+    backup: yes
+
+- name: Manage wheel group
+  group:
+    name: wheel
+    state: present
+    gid: 10
+    system: yes
+
+- name: Require wheel membership to use 'su'
+  pamd:
+    name: su
+    type: auth
+    control: sufficient
+    module_path: pam_rootok.so
+    new_type: auth
+    new_control: required
+    new_module_path: pam_wheel.so
+    module_arguments: 'use_uid'
+    state: after
+  tags:
+    - always
+    - accounts
+    - medium
+    - V-71919

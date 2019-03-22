@@ -1,0 +1,9 @@
+---
+# RHEL 7 STIG: Packages to add/remove
+stig_packages_rhel7:
+  - packages:
+      - sudo
+    state: "{{ security_package_state }}"
+    enabled: 'True'
+# Placeholder Org
+org: 'example.com'
